@@ -1,6 +1,8 @@
 Go files
 ========
 
+[![Build Status](https://travis-ci.org/enr/go-files.png?branch=master)](https://travis-ci.org/enr/go-files)
+
 Go library to easily manipulate files.
 
 Import the library:
