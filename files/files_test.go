@@ -190,6 +190,55 @@ func TestIsRegular(t *testing.T) {
 	}
 }
 
+func TestReadLines(t *testing.T) {
+	path := "testdata/files/sub/03.txt"
+	lines, err := ReadLines(path)
+	if err != nil {
+		t.Errorf("error reading lines from %s", path)
+	}
+	if len(lines) != 5 {
+		t.Errorf("ReadLines(%s), expected %d lines but got %d", path, 5, len(lines))
+	}
+	filelines := []string{
+		"Hi, my name is 03.",
+		"",
+		"I am multi...",
+		"...",
+		"lines!",
+	}
+	for index, actual := range lines {
+		expected := filelines[index]
+		if actual != expected {
+			t.Errorf(`ReadLines(%s), line %d expected %q but got %q`, path, index, expected, actual)
+		}
+	}
+}
+
+func TestEachLine(t *testing.T) {
+	path := "testdata/files/sub/03.txt"
+	filelines := []string{}
+	EachLine(path, func(line string) error {
+		filelines = append(filelines, line)
+		return nil
+	})
+	if len(filelines) != 5 {
+		t.Errorf("EachLine(%s), expected %d lines but got %d", path, 5, len(filelines))
+	}
+	expectedlines := []string{
+		"Hi, my name is 03.",
+		"",
+		"I am multi...",
+		"...",
+		"lines!",
+	}
+	for index, actual := range filelines {
+		expected := expectedlines[index]
+		if actual != expected {
+			t.Errorf(`EachLine(%s), line %d expected %q but got %q`, path, index, expected, actual)
+		}
+	}
+}
+
 func deleteFile(path string, t *testing.T) {
 	if Exists(path) {
 		err := os.Remove(path)

@@ -58,6 +58,25 @@ Copy file in directory:
     }
 ```
 
+Read file lines:
+
+```Go
+    lines, err := files.ReadLines(path)
+    if err != nil {
+        // ...
+    }
+```
+
+Process file lines:
+
+```Go
+    files.EachLine(path, func(line string) error {
+      fmt.Println(" # " + line)
+      return nil
+    })
+```
+
+
 License
 -------
 

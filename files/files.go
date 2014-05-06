@@ -101,6 +101,29 @@ func Sha1Sum(fpath string) (string, error) {
 	return fmt.Sprintf("%x", sha1.Sum(nil)), nil
 }
 
+func ReadLines(path string) ([]string, error) {
+	lines := []string{}
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		//fmt.Println(err)
+		return []string{}, err
+	}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		//fmt.Println(" # " + line)
+		lines = append(lines, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		//fmt.Println(err)
+		return []string{}, err
+	}
+	return lines, err
+}
+
 /*
 func MD5OfFile(fullpath string) []byte {
 	if contents, err := ioutil.ReadFile(fullpath); err == nil {
@@ -121,4 +144,32 @@ func cleanPath(filepath string) string {
 		}
 		return path.Clean(withoutSpaces)
 	*/
+}
+
+type EachLineFunc func(line string) error
+
+// Walk walks lines, calling walkFn for each line of the file.
+// All errors that arise visiting lines are filtered by walkFn.
+func EachLine(path string, walkFn EachLineFunc) error {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		//fmt.Println(" # " + line)
+		err = walkFn(line)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		//fmt.Println(err)
+		return err
+	}
+	return err
 }
