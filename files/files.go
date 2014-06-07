@@ -106,19 +106,16 @@ func ReadLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {
-		//fmt.Println(err)
 		return []string{}, err
 	}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		//fmt.Println(" # " + line)
 		lines = append(lines, line)
 	}
 
 	if err := scanner.Err(); err != nil {
-		//fmt.Println(err)
 		return []string{}, err
 	}
 	return lines, err
@@ -160,7 +157,6 @@ func EachLine(path string, walkFn EachLineFunc) error {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		//fmt.Println(" # " + line)
 		err = walkFn(line)
 		if err != nil {
 			return err
@@ -168,7 +164,6 @@ func EachLine(path string, walkFn EachLineFunc) error {
 	}
 
 	if err := scanner.Err(); err != nil {
-		//fmt.Println(err)
 		return err
 	}
 	return err
