@@ -48,7 +48,7 @@ func Copy(source, destination string) error {
 func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
 	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err){
+		if os.IsNotExist(err) {
 			return false, err
 		}
 		// Windows: error 123 (0x7B) The filename, directory name, or volume label syntax is incorrect.
