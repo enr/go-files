@@ -3,9 +3,12 @@ package files
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 )
 
 type maybedir struct {
@@ -157,6 +160,68 @@ func TestExists(t *testing.T) {
 	}
 }
 
+func TestExistsPerms(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+
+	startDir := "/tmp/" + timestamp()
+	base := startDir + "/TestExistsPerms"
+	err := os.MkdirAll(base, 0777)
+	check(t, err)
+
+	fileName := base + "/bar"
+    f, err := os.OpenFile(fileName, os.O_CREATE, 0660)
+    check(t, err)
+    defer f.Close()
+
+    execCommand(t, "/bin/chmod", "777", fileName)
+    execCommand(t, "/bin/chmod", "777", base)
+
+    e := Exists(fileName)
+	if !e {
+		t.Errorf(`%s : expected exists but got false`, fileName)
+	}
+
+    execCommand(t, "/bin/chmod", "000", fileName)
+    execCommand(t, "/bin/chmod", "000", base)
+
+    e2 := Exists(fileName)
+	if !e2 {
+		t.Errorf(`%s : expected exists but got false`, fileName)
+	}
+}
+
+func TestIsAccessible(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+	startDir := "/tmp/" + timestamp()
+	base := startDir + "/TestIsAccessible"
+	err := os.MkdirAll(base, 0777)
+	check(t, err)
+
+	fileName := base + "/bar"
+    f, err := os.OpenFile(fileName, os.O_CREATE, 0660)
+    check(t, err)
+    defer f.Close()
+
+    execCommand(t, "/bin/chmod", "777", fileName)
+    execCommand(t, "/bin/chmod", "777", base)
+    a1 := IsAccessible(fileName)
+	if !a1 {
+		t.Errorf(`%s : expected accessible but got false`, fileName)
+	}
+
+    execCommand(t, "/bin/chmod", "000", fileName)
+    execCommand(t, "/bin/chmod", "000", base)
+
+    a2 := IsAccessible(fileName)
+	if a2 {
+		t.Errorf(`%s : expected not accessible but got true`, fileName)
+	}
+}
+
 type mayberegs struct {
 	path string
 	reg  bool
@@ -252,5 +317,26 @@ func createDir(path string, t *testing.T) {
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
 		t.Error("error creating directory", path)
+	}
+}
+
+func timestamp() string {
+	const layout = "20060102150405"
+	t := time.Now()
+	ts := t.Local().Format(layout)
+	return ts
+}
+
+func check(t *testing.T, err error) {
+	if err != nil {
+		t.Errorf("error %v", err)
+	}
+}
+
+func execCommand(t *testing.T, name string, args ...string) {
+	cmd := exec.Command(name, args...)
+	o, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Errorf("error executing command %v\n%s", err, o)
 	}
 }

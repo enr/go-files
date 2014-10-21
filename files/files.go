@@ -45,25 +45,37 @@ func Copy(source, destination string) error {
 	return d.Close()
 }
 
-// fileExists reports whether the named file or directory exists.
-func Exists(filepath string) bool {
+func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
 	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
+		if os.IsNotExist(err){
+			return false, err
 		}
 		// Windows: error 123 (0x7B) The filename, directory name, or volume label syntax is incorrect.
 		if runtime.GOOS == "windows" {
 			if e, ok := err.(*os.PathError); ok {
 				if en, ok := e.Err.(syscall.Errno); ok {
 					if int(en) == 123 {
-						return false
+						return false, err
 					}
 				}
 			}
 		}
+		return true, err
 	}
-	return true
+	return true, nil
+}
+
+// fileExists reports whether the named file or directory exists.
+func Exists(filepath string) bool {
+	exist, _ := existsWithError(filepath)
+	return exist
+}
+
+// file exists and user has permission to use it
+func IsAccessible(filepath string) bool {
+	exist, err := existsWithError(filepath)
+	return exist && !os.IsPermission(err)
 }
 
 // IsDir reports whether d is a directory.
