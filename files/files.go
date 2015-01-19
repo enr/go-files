@@ -66,13 +66,13 @@ func existsWithError(filepath string) (bool, error) {
 	return true, nil
 }
 
-// fileExists reports whether the named file or directory exists.
+// Exists reports whether the named file or directory exists.
 func Exists(filepath string) bool {
 	exist, _ := existsWithError(filepath)
 	return exist
 }
 
-// file exists and user has permission to use it
+// IsAccessible reports if file exists and user has permission to use it
 func IsAccessible(filepath string) bool {
 	exist, err := existsWithError(filepath)
 	return exist && !os.IsPermission(err)
@@ -113,6 +113,7 @@ func Sha1Sum(fpath string) (string, error) {
 	return fmt.Sprintf("%x", sha1.Sum(nil)), nil
 }
 
+// ReadLines returns a slice containing file lines.
 func ReadLines(path string) ([]string, error) {
 	lines := []string{}
 	file, err := os.Open(path)
@@ -155,10 +156,11 @@ func cleanPath(filepath string) string {
 	*/
 }
 
+// EachLineFunc is definition of callback
 type EachLineFunc func(line string) error
 
-// Walk walks lines, calling walkFn for each line of the file.
-// All errors that arise visiting lines are filtered by walkFn.
+// EachLine walks lines, calling EachLineFunc for each line of the file.
+// All errors that arise visiting lines are filtered by callback function.
 func EachLine(path string, walkFn EachLineFunc) error {
 	file, err := os.Open(path)
 	defer file.Close()
