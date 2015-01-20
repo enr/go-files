@@ -2,13 +2,13 @@ package files
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"testing"
-	"time"
 )
 
 type maybedir struct {
@@ -64,8 +64,8 @@ func TestSha1Sum(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	outputDir := "output"
-	createDir(outputDir, t)
+	outputDir, err := ioutil.TempDir("/tmp", "filestest_copy")
+	check(t, err)
 	for _, data := range testfiles {
 		of := fmt.Sprintf("%s/%s", outputDir, filepath.Base(data.path))
 		deleteFile(of, t)
@@ -99,8 +99,6 @@ var copyErrorData = []copyerrorargs{
 
 func TestCopyError(t *testing.T) {
 	for _, data := range copyErrorData {
-		//fmt.Printf(`s="%s" d="%s"%s`, data.source, data.destination, "\n")
-		//deleteFile(data.destination, t)
 		err := Copy(data.source, data.destination)
 		if err == nil {
 			t.Errorf("expected error in Copy(%s, %s) but got nil", data.source, data.destination)
@@ -113,10 +111,11 @@ func TestCopyError(t *testing.T) {
 
 func TestCopyInDir(t *testing.T) {
 	sourceFile := "testdata/files/01.txt"
-	destinationDir := "output/test"
-	expectedFile := "output/test/01.txt"
-	createDir(destinationDir, t)
-	err := Copy(sourceFile, destinationDir)
+	destinationDir, err := ioutil.TempDir("/tmp", "filestest_copyindir")
+	check(t, err)
+	expectedFile := fmt.Sprintf("%s/01.txt", destinationDir)
+
+	err = Copy(sourceFile, destinationDir)
 	if err != nil {
 		t.Errorf("error in Copy(%s, %s)", sourceFile, destinationDir)
 	}
@@ -165,9 +164,10 @@ func TestExistsPerms(t *testing.T) {
 		return
 	}
 
-	startDir := "/tmp/" + timestamp()
+	startDir, err := ioutil.TempDir("/tmp", "filestest_existsperms")
+	check(t, err)
 	base := startDir + "/TestExistsPerms"
-	err := os.MkdirAll(base, 0777)
+	err = os.MkdirAll(base, 0777)
 	check(t, err)
 
 	fileName := base + "/bar"
@@ -196,9 +196,11 @@ func TestIsAccessible(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		return
 	}
-	startDir := "/tmp/" + timestamp()
+
+	startDir, err := ioutil.TempDir("/tmp", "filestest_isaccessible")
+	check(t, err)
 	base := startDir + "/TestIsAccessible"
-	err := os.MkdirAll(base, 0777)
+	err = os.MkdirAll(base, 0777)
 	check(t, err)
 
 	fileName := base + "/bar"
@@ -311,20 +313,6 @@ func deleteFile(path string, t *testing.T) {
 			t.Error("error deleting path", path)
 		}
 	}
-}
-
-func createDir(path string, t *testing.T) {
-	err := os.MkdirAll(path, 0777)
-	if err != nil {
-		t.Error("error creating directory", path)
-	}
-}
-
-func timestamp() string {
-	const layout = "20060102150405"
-	t := time.Now()
-	ts := t.Local().Format(layout)
-	return ts
 }
 
 func check(t *testing.T, err error) {
