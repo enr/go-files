@@ -8,72 +8,78 @@ Go library to easily manipulate files.
 Import the library:
 
 ```Go
-    import (
-        "github.com/enr/go-files/files"
-    )
+import (
+    "github.com/enr/go-files/files"
+)
 ```
 
 Check if path exists (is a file or a directory):
 
 ```Go
-    e := files.Exists(data.path)
+e := files.Exists(data.path)
 ```
 
 Check if path is a regular file:
 
 ```Go
-    e := files.IsRegular(data.path)
+e := files.IsRegular(data.path)
 ```
 
 Check if path is a directory:
 
 ```Go
-    is := files.IsDir(data.path)
+is := files.IsDir(data.path)
+```
+
+Check if path is a symlink:
+
+```Go
+e := files.IsSymlink(data.path)
 ```
 
 Get the Sha1 checksum:
 
 ```Go
-    sha1sum, err := files.Sha1Sum(data.path)
-    if err != nil {
-        // ...
-    }
+sha1sum, err := files.Sha1Sum(data.path)
+if err != nil {
+    // ...
+}
 ```
 
 Copy file to file:
 
 ```Go
-    err := files.Copy(data.path, of)
-    if err != nil {
-        // ...
-    }
+err := files.Copy(data.path, of)
+if err != nil {
+    // ...
+}
 ```
 
 Copy file in directory:
 
 ```Go
-    err := files.Copy(data.path, of)
-    if err != nil {
-        // ...
-    }
+err := files.Copy(data.path, of)
+if err != nil {
+    // ...
+}
 ```
 
 Read file lines:
 
 ```Go
-    lines, err := files.ReadLines(path)
-    if err != nil {
-        // ...
-    }
+lines, err := files.ReadLines(path)
+if err != nil {
+    // ...
+}
 ```
 
 Process file lines:
 
 ```Go
-    files.EachLine(path, func(line string) error {
-      fmt.Println(" # " + line)
-      return nil
-    })
+files.EachLine(path, func(line string) error {
+    fmt.Println(" # " + line)
+    return nil
+})
 ```
 
 

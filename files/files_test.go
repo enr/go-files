@@ -27,6 +27,7 @@ var isDirData = []maybedir{
 	{"testdata/files", true},
 	{"testdata/files/", true},
 	{"testdata/files/01.txt", false},
+	{"testdata/files/linkto01", false},
 	{"testdata/files/sub", true},
 	{"testdata/files/sub/", true},
 }
@@ -142,6 +143,7 @@ var existsData = []maybeexists{
 	{"testdata/files/", true},
 	{"testdata/files/01.txt", true},
 	{"testdata/files/02.txt", true},
+	{"testdata/files/linkto01", true},
 	{"testdata/files/sub", true},
 	{"testdata/files/sub/", true},
 	{"testdata/files/sub/03", false},
@@ -242,6 +244,7 @@ var regData = []maybeexists{
 	{"testdata/files/", false},
 	{"testdata/files/01.txt", true},
 	{"testdata/files/02.txt", true},
+	{"testdata/files/linkto01", true},
 	{"testdata/files/sub/03", false},
 	{"testdata/files/sub/03.txt", true},
 	{"./testdata/files/sub/03.txt", true},
@@ -302,6 +305,36 @@ func TestEachLine(t *testing.T) {
 		expected := expectedlines[index]
 		if actual != expected {
 			t.Errorf(`EachLine(%s), line %d expected %q but got %q`, path, index, expected, actual)
+		}
+	}
+}
+
+type maybeln struct {
+	path  string
+	isln bool
+}
+
+var isSymlinkData = []maybeln{
+	{"", false},
+	{"   ", false},
+	{"?|!", false},
+	{".notfound", false},
+	{".", false},
+	{"testdata", false},
+	{"testdata/", false},
+	{"testdata/files", false},
+	{"testdata/files/", false},
+	{"testdata/files/01.txt", false},
+	{"testdata/files/linkto01", true},
+	{"testdata/files/sub", false},
+	{"testdata/files/sub/", false},
+}
+
+func TestIsSymlink(t *testing.T) {
+	for _, data := range isSymlinkData {
+		is := IsSymlink(data.path)
+		if is != data.isln {
+			t.Errorf(`Expected IsSymlink=%t for path "%s"`, data.isln, data.path)
 		}
 	}
 }
