@@ -2,6 +2,7 @@ Go files
 ========
 
 [![Build Status](https://travis-ci.org/enr/go-files.png?branch=master)](https://travis-ci.org/enr/go-files)
+[![Build status](https://ci.appveyor.com/api/projects/status/cs8bli7qpraqw8yd?svg=true)](https://ci.appveyor.com/project/enr/go-files)
 
 Go library to easily manipulate files.
 
@@ -16,31 +17,31 @@ import (
 Check if path exists (is a file or a directory):
 
 ```Go
-e := files.Exists(data.path)
+e := files.Exists(fpath)
 ```
 
 Check if path is a regular file:
 
 ```Go
-e := files.IsRegular(data.path)
+e := files.IsRegular(fpath)
 ```
 
 Check if path is a directory:
 
 ```Go
-is := files.IsDir(data.path)
+is := files.IsDir(fpath)
 ```
 
 Check if path is a symlink:
 
 ```Go
-e := files.IsSymlink(data.path)
+e := files.IsSymlink(fpath)
 ```
 
 Get the Sha1 checksum:
 
 ```Go
-sha1sum, err := files.Sha1Sum(data.path)
+sha1sum, err := files.Sha1Sum(fpath)
 if err != nil {
     // ...
 }
@@ -49,7 +50,7 @@ if err != nil {
 Copy file to file:
 
 ```Go
-err := files.Copy(data.path, of)
+err := files.Copy(srcpath, destpath)
 if err != nil {
     // ...
 }
@@ -58,7 +59,7 @@ if err != nil {
 Copy file in directory:
 
 ```Go
-err := files.Copy(data.path, of)
+err := files.Copy(srcpath, destpath)
 if err != nil {
     // ...
 }
@@ -67,7 +68,7 @@ if err != nil {
 Read file lines:
 
 ```Go
-lines, err := files.ReadLines(path)
+lines, err := files.ReadLines(fpath)
 if err != nil {
     // ...
 }

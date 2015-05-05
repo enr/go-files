@@ -1,4 +1,6 @@
 
+sudo: false
+
 language: go
 
 branches:
@@ -6,5 +8,5 @@ branches:
     - master
 
 go:
- - 1.4.2
-
+ - 1.4
+ - tip
