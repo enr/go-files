@@ -23,6 +23,7 @@ environment:
 install:
   - echo %PATH%
   - echo %GOPATH%
+  - set
   - go version
   - go env
   - go get -v -t ./...
