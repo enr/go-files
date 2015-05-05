@@ -12,7 +12,7 @@ branches:
   only:
     - master
 
-clone_folder: c:\gopath\src\github.com\enr\go-files
+clone_folder: c:\gopath\src\github.com\enr\%APPVEYOR_PROJECT_NAME%
 
 environment:
   GOPATH: c:\gopath
@@ -21,9 +21,9 @@ environment:
     GOVERSION: 1.4
 
 install:
-  - echo %PATH%
+  # - echo %PATH%
   - echo %GOPATH%
-  - set
+  # - set
   - go version
   - go env
   - go get -v -t ./...
