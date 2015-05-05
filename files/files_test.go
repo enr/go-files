@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"testing"
 )
 
@@ -65,7 +64,7 @@ func TestSha1Sum(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	outputDir, err := ioutil.TempDir("/tmp", "filestest_copy")
+	outputDir, err := ioutil.TempDir("", "filestest_copy")
 	check(t, err)
 	for _, data := range testfiles {
 		of := fmt.Sprintf("%s/%s", outputDir, filepath.Base(data.path))
@@ -112,7 +111,7 @@ func TestCopyError(t *testing.T) {
 
 func TestCopyInDir(t *testing.T) {
 	sourceFile := "testdata/files/01.txt"
-	destinationDir, err := ioutil.TempDir("/tmp", "filestest_copyindir")
+	destinationDir, err := ioutil.TempDir("", "filestest_copyindir")
 	check(t, err)
 	expectedFile := fmt.Sprintf("%s/01.txt", destinationDir)
 
@@ -158,71 +157,6 @@ func TestExists(t *testing.T) {
 		if e != data.exists {
 			t.Errorf(`%s : expected exists "%t"`, data.path, data.exists)
 		}
-	}
-}
-
-func TestExistsPerms(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		return
-	}
-
-	startDir, err := ioutil.TempDir("/tmp", "filestest_existsperms")
-	check(t, err)
-	base := startDir + "/TestExistsPerms"
-	err = os.MkdirAll(base, 0777)
-	check(t, err)
-
-	fileName := base + "/bar"
-	f, err := os.OpenFile(fileName, os.O_CREATE, 0660)
-	check(t, err)
-	defer f.Close()
-
-	execCommand(t, "/bin/chmod", "777", fileName)
-	execCommand(t, "/bin/chmod", "777", base)
-
-	e := Exists(fileName)
-	if !e {
-		t.Errorf(`%s : expected exists but got false`, fileName)
-	}
-
-	execCommand(t, "/bin/chmod", "000", fileName)
-	execCommand(t, "/bin/chmod", "000", base)
-
-	e2 := Exists(fileName)
-	if !e2 {
-		t.Errorf(`%s : expected exists but got false`, fileName)
-	}
-}
-
-func TestIsAccessible(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		return
-	}
-
-	startDir, err := ioutil.TempDir("/tmp", "filestest_isaccessible")
-	check(t, err)
-	base := startDir + "/TestIsAccessible"
-	err = os.MkdirAll(base, 0777)
-	check(t, err)
-
-	fileName := base + "/bar"
-	f, err := os.OpenFile(fileName, os.O_CREATE, 0660)
-	check(t, err)
-	defer f.Close()
-
-	execCommand(t, "/bin/chmod", "777", fileName)
-	execCommand(t, "/bin/chmod", "777", base)
-	a1 := IsAccessible(fileName)
-	if !a1 {
-		t.Errorf(`%s : expected accessible but got false`, fileName)
-	}
-
-	execCommand(t, "/bin/chmod", "000", fileName)
-	execCommand(t, "/bin/chmod", "000", base)
-
-	a2 := IsAccessible(fileName)
-	if a2 {
-		t.Errorf(`%s : expected not accessible but got true`, fileName)
 	}
 }
 
@@ -312,31 +246,6 @@ func TestEachLine(t *testing.T) {
 type maybeln struct {
 	path  string
 	isln bool
-}
-
-var isSymlinkData = []maybeln{
-	{"", false},
-	{"   ", false},
-	{"?|!", false},
-	{".notfound", false},
-	{".", false},
-	{"testdata", false},
-	{"testdata/", false},
-	{"testdata/files", false},
-	{"testdata/files/", false},
-	{"testdata/files/01.txt", false},
-	{"testdata/files/linkto01", true},
-	{"testdata/files/sub", false},
-	{"testdata/files/sub/", false},
-}
-
-func TestIsSymlink(t *testing.T) {
-	for _, data := range isSymlinkData {
-		is := IsSymlink(data.path)
-		if is != data.isln {
-			t.Errorf(`Expected IsSymlink=%t for path "%s"`, data.isln, data.path)
-		}
-	}
 }
 
 func deleteFile(path string, t *testing.T) {
