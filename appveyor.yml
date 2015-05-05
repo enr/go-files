@@ -12,7 +12,7 @@ branches:
   only:
     - master
 
-clone_folder: c:\gopath\src\github.com\enr\%APPVEYOR_PROJECT_NAME%
+clone_folder: c:\gopath\src\github.com\enr\go-files
 
 environment:
   GOPATH: c:\gopath
