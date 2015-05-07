@@ -4,7 +4,7 @@ Go files
 [![Build Status](https://travis-ci.org/enr/go-files.png?branch=master)](https://travis-ci.org/enr/go-files)
 [![Build status](https://ci.appveyor.com/api/projects/status/cs8bli7qpraqw8yd?svg=true)](https://ci.appveyor.com/project/enr/go-files)
 
-Go library to easily manipulate files.
+Shortcuts for operations pertaining files.
 
 Import the library:
 
@@ -15,6 +15,10 @@ import (
 ```
 
 Check if path exists (is a file or a directory):
+
+NOTE: There are some good reasons why this function is not implemented in the standard lib (see https://github.com/golang/go/issues/1312)
+but, if you have to simply check if a file exists in this very moment, it is useful to have a one liner.
+
 
 ```Go
 e := files.Exists(fpath)
@@ -59,7 +63,7 @@ if err != nil {
 Copy file in directory:
 
 ```Go
-err := files.Copy(srcpath, destpath)
+err := files.Copy(fpath, destpath)
 if err != nil {
     // ...
 }
