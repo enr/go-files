@@ -8,12 +8,11 @@ branches:
 language: go
 
 go:
- - 1.4
+ - 1.8
  - tip
 
 before_install:
   - go get golang.org/x/tools/cmd/cover
-  - go get golang.org/x/tools/cmd/vet
 
 script:
   - go vet ./...
