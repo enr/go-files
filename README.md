@@ -69,6 +69,15 @@ if err != nil {
 }
 ```
 
+Copy directory recursively:
+
+```Go
+err := files.CopyDir(source, destination)
+if err != nil {
+    // ...
+}
+```
+
 Read file lines:
 
 ```Go
