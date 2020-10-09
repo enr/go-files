@@ -21,6 +21,11 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ matrix.go-version }}
+    - name: Set git to use LF
+      # Workaround to https://github.com/actions/checkout/issues/135
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v1
     - name: Test
