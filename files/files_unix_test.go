@@ -32,8 +32,8 @@ func TestExistsPerms(t *testing.T) {
 	execCommand(t, "/bin/chmod", "000", base)
 
 	e2 := Exists(fileName)
-	if !e2 {
-		t.Errorf(`%s : expected exists but got false`, fileName)
+	if e2 {
+		t.Errorf(`%s : expected exists returning FALSE for an unattainable file`, fileName)
 	}
 }
 
@@ -76,7 +76,10 @@ var isSymlinkData = []maybeln{
 	{"testdata/files", false},
 	{"testdata/files/", false},
 	{"testdata/files/01.txt", false},
+	{"testdata/files/01.txt/foo", false},
 	{"testdata/files/linkto01", true},
+	{"testdata/files/../files/linkto01", true},
+	{"testdata/files/./linkto01", true},
 	{"testdata/files/sub", false},
 	{"testdata/files/sub/", false},
 }

@@ -26,6 +26,7 @@ var isDirData = []maybedir{
 	{"testdata/files", true},
 	{"testdata/files/", true},
 	{"testdata/files/01.txt", false},
+	{"testdata/files/01.txt/test", false},
 	{"testdata/files/linkto01", false},
 	{"testdata/files/sub", true},
 	{"testdata/files/sub/", true},
@@ -141,6 +142,7 @@ var existsData = []maybeexists{
 	{"testdata/files", true},
 	{"testdata/files/", true},
 	{"testdata/files/01.txt", true},
+	{"testdata/files/01.txt/foo", false},
 	{"testdata/files/02.txt", true},
 	{"testdata/files/linkto01", true},
 	{"testdata/files/sub", true},
@@ -244,7 +246,7 @@ func TestEachLine(t *testing.T) {
 }
 
 type maybeln struct {
-	path  string
+	path string
 	isln bool
 }
 

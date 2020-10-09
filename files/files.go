@@ -48,7 +48,7 @@ func Copy(source, destination string) error {
 
 func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
-	if _, err := os.Stat(name); err != nil {
+	if s, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
 			return false, err
 		}
@@ -62,7 +62,7 @@ func existsWithError(filepath string) (bool, error) {
 				}
 			}
 		}
-		return true, err
+		return s != nil, err
 	}
 	return true, nil
 }
