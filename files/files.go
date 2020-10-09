@@ -50,8 +50,6 @@ func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
 	s, err := os.Stat(name)
 	if err != nil {
-		fmt.Printf("NOOO s %v \n", s)
-		fmt.Printf("NOOO e %v \n", err)
 		if os.IsNotExist(err) {
 			return false, err
 		}
@@ -67,7 +65,6 @@ func existsWithError(filepath string) (bool, error) {
 		}
 		return s != nil, err
 	}
-	fmt.Printf("OOOKK %s \n", s.Mode())
 	return true, nil
 }
 
