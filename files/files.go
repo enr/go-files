@@ -100,9 +100,8 @@ func Sha1Sum(fpath string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	reader := bufio.NewReader(f)
 	sha1 := sha1.New()
-	_, err = io.Copy(sha1, reader)
+	_, err = io.Copy(sha1, f)
 	if err != nil {
 		return "", err
 	}
