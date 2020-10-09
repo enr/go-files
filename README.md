@@ -1,6 +1,11 @@
 Go files
 ========
 
+![CI Linux](https://github.com/enr/go-files/workflows/CI%20Nix/badge.svg)
+![CI Windows](https://github.com/enr/go-files/workflows/CI%20Windows/badge.svg)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/enr/go-files)](https://pkg.go.dev/github.com/enr/go-files)
+[![Go Report Card](https://goreportcard.com/badge/github.com/enr/go-files)](https://goreportcard.com/report/github.com/enr/go-files)
+
 Shortcuts for operations pertaining files.
 
 Import the library:
