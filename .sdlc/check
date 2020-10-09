@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -e
+
+TOOL_SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$TOOL_SOURCE" ] ; do TOOL_SOURCE="$(readlink "$TOOL_SOURCE")"; done
+SDLC_DIR="$( cd -P "$( dirname "$TOOL_SOURCE" )" && pwd )"
+PRJ_HOME="$( cd -P "$( dirname "$SDLC_DIR" )" && pwd )"
+
+current_user=$(id -n -u)
+echo "Start ${TOOL_SOURCE} as user ${current_user}"
+
+git_hash="$(git rev-parse HEAD)"
+git_message=$(git log --format=%B -n 1 "${git_hash}")
+echo "git message ${git_message}"
+[[ "$git_message" == '[skip ci]'* ]] && {
+  echo "skip ci"
+  exit 0
+}
+
+source "${SDLC_DIR}/config"
+app_name="${REPO_NAME}"
+
+# Ensure GOPATH is on PATH. (Needed from Go tools).
+# If GOPATH is defined assume it is on $PATH
+echo "Environment GOPATH='${GOPATH}'"
+[[ -z "$GOPATH" ]] && {
+  # GOPATH undefined
+  default_gopath=$(go env GOPATH)
+  echo "No GOPATH from environment, using 'go env' ${default_gopath}"
+  mkdir -p "${default_gopath}"
+  # go env -w GOPATH="${gopath_dir}"
+  export GOPATH="${default_gopath}"
+}
+
+echo "Environment PATH=${PATH}"
+[[ "$PATH" =~ (^|:)"${GOPATH}/bin"(|/)(:|$) ]] || {
+  echo "Adding ${GOPATH}/bin to PATH"
+  export PATH="${GOPATH}/bin:${PATH}"
+}
+
+hash golint 2>/dev/null || {
+  go get -u golang.org/x/lint/golint
+}
+
+hash goimports 2>/dev/null || {
+  go get -u golang.org/x/tools/cmd/goimports
+}
+
+hash gocyclo 2>/dev/null || {
+  go get -u github.com/fzipp/gocyclo
+}
+
+base_dir="${PRJ_HOME}/${SDLC_GO_BASE}"
+cd "${base_dir}"
+
+echo "--- golint"
+diff <(golint ./...) <(printf "")
+echo "--- go fmt"
+go fmt ./...
+echo "--- go vet"
+go vet ./...
+echo "--- goimports"
+goimports -w .
+diff <(goimports -d .) <(printf "")
+echo "--- gocyclo"
+diff <(gocyclo -over 10 *.go) <(printf "")
+echo "--- go test"
+# go test -race ./...
+go test -v -cover ./...

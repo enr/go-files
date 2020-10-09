@@ -1,0 +1,10 @@
+REPO_HOST='github.com'
+REPO_OWNER='enr'
+REPO_NAME='go-files'
+
+SDLC_GO_VENDOR=
+SDLC_GO_BASE=files
+SDLC_DIST_DIR=
+
+APP_VERSION='0.1.0-dev' # APP_VERSION_AUTOLINE this line is automatically managed
+

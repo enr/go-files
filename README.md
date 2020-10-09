@@ -1,9 +1,6 @@
 Go files
 ========
 
-[![Build Status](https://travis-ci.org/enr/go-files.png?branch=master)](https://travis-ci.org/enr/go-files)
-[![Build status](https://ci.appveyor.com/api/projects/status/cs8bli7qpraqw8yd?svg=true)](https://ci.appveyor.com/project/enr/go-files)
-
 Shortcuts for operations pertaining files.
 
 Import the library:

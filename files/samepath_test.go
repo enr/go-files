@@ -5,8 +5,8 @@ import (
 )
 
 type samepathTestCase struct {
-	p1 string
-  p2 string
+	p1     string
+	p2     string
 	equals bool
 }
 

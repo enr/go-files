@@ -48,7 +48,10 @@ func Copy(source, destination string) error {
 
 func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
-	if s, err := os.Stat(name); err != nil {
+	s, err := os.Stat(name)
+	if err != nil {
+		fmt.Printf("NOOO s %v \n", s)
+		fmt.Printf("NOOO e %v \n", err)
 		if os.IsNotExist(err) {
 			return false, err
 		}
@@ -64,6 +67,7 @@ func existsWithError(filepath string) (bool, error) {
 		}
 		return s != nil, err
 	}
+	fmt.Printf("OOOKK %s \n", s.Mode())
 	return true, nil
 }
 
@@ -71,12 +75,6 @@ func existsWithError(filepath string) (bool, error) {
 func Exists(filepath string) bool {
 	exist, _ := existsWithError(filepath)
 	return exist
-}
-
-// IsAccessible reports if file exists and user has permission to use it
-func IsAccessible(filepath string) bool {
-	exist, err := existsWithError(filepath)
-	return exist && !os.IsPermission(err)
 }
 
 // IsDir reports whether d is a directory.
@@ -184,6 +182,7 @@ func EachLine(path string, walkFn EachLineFunc) error {
 	return err
 }
 
+// IsSamePath returns true if two different strings refer to the same file.
 func IsSamePath(p1 string, p2 string) bool {
 	first, err := normalizedPath(p1)
 	if err != nil {
