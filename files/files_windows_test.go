@@ -18,7 +18,7 @@ var isSymlinkDataWin = []maybeln{
 	{"testdata/files/", false},
 	{"testdata/files/01.txt", false},
 	{"testdata/files/01.txt/foo", false},
-	{"testdata/files/linkto01", false},
+	{"testdata/files/linkto01", true},
 	{"testdata/files/sub", false},
 	{"testdata/files/sub/", false},
 }
