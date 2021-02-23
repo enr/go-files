@@ -272,3 +272,11 @@ func execCommand(t *testing.T, name string, args ...string) {
 		t.Errorf("error executing command %v\n%s", err, o)
 	}
 }
+
+func TestBrokenLink(t *testing.T) {
+	sourceFile := "testdata/files/brokenlink"
+	ln := isSymlink(sourceFile)
+	if !ln {
+		t.Errorf("broken link %s expected to be link", sourceFile)
+	}
+}
