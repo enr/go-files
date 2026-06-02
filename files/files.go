@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -32,10 +31,14 @@ func Copy(source, destination string) error {
 	}
 	if IsDir(dst) {
 		basename := filepath.Base(src)
-		dst = path.Join(dst, basename)
+		dst = filepath.Join(dst, basename)
 	}
 
-	d, err := os.Create(dst)
+	srcInfo, err := s.Stat()
+	if err != nil {
+		return err
+	}
+	d, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
@@ -120,11 +123,11 @@ func Sha1Sum(fpath string) (string, error) {
 // ReadLines returns a slice containing file lines.
 func ReadLines(path string) ([]string, error) {
 	lines := []string{}
-	file, err := os.Open(path)
-	defer file.Close()
+	file, err := os.Open(cleanPath(path))
 	if err != nil {
 		return []string{}, err
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -166,11 +169,11 @@ type EachLineFunc func(line string) error
 // EachLine walks lines, calling EachLineFunc for each line of the file.
 // All errors that arise visiting lines are filtered by callback function.
 func EachLine(path string, walkFn EachLineFunc) error {
-	file, err := os.Open(path)
-	defer file.Close()
+	file, err := os.Open(cleanPath(path))
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -230,8 +233,8 @@ func CopyDir(src string, dst string) error {
 		return err
 	}
 	for _, fd := range fds {
-		sourcePath := path.Join(src, fd.Name())
-		destinationPath := path.Join(dst, fd.Name())
+		sourcePath := filepath.Join(src, fd.Name())
+		destinationPath := filepath.Join(dst, fd.Name())
 
 		if fd.IsDir() {
 			if err = CopyDir(sourcePath, destinationPath); err != nil {
