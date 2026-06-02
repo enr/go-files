@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -51,7 +50,7 @@ func Copy(source, destination string) error {
 
 func existsWithError(filepath string) (bool, error) {
 	name := cleanPath(filepath)
-	s, err := os.Stat(name)
+	_, err := os.Stat(name)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, err
@@ -66,7 +65,7 @@ func existsWithError(filepath string) (bool, error) {
 				}
 			}
 		}
-		return s != nil, err
+		return false, err
 	}
 	return true, nil
 }
@@ -104,7 +103,9 @@ func IsRegular(fpath string) bool {
 	return false
 }
 
-// Sha1Sum gives the checksum for the given file
+// Sha1Sum gives the checksum for the given file.
+// SHA-1 is not collision-resistant; do not use for security or integrity
+// verification where an adversary controls the input — use SHA-256 for that.
 func Sha1Sum(fpath string) (string, error) {
 	name := cleanPath(fpath)
 	f, err := os.Open(name)
@@ -219,17 +220,16 @@ func normalizedPath(p string) (string, error) {
 
 // CopyDir copies a whole directory recursively overwriting contents
 func CopyDir(src string, dst string) error {
-	var err error
-	var fds []os.FileInfo
-	var info os.FileInfo
-	if info, err = os.Stat(src); err != nil {
+	info, err := os.Stat(src)
+	if err != nil {
 		return err
 	}
 	if err = os.MkdirAll(dst, info.Mode()); err != nil {
 		return err
 	}
 
-	if fds, err = ioutil.ReadDir(src); err != nil {
+	fds, err := os.ReadDir(src)
+	if err != nil {
 		return err
 	}
 	for _, fd := range fds {
