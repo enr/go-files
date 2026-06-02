@@ -68,10 +68,19 @@ func existsWithError(filepath string) (bool, error) {
 	return true, nil
 }
 
-// Exists reports whether the named file or directory exists.
+// Exists reports whether the named file or directory exists and is accessible.
+// Returns false if the path does not exist or cannot be accessed (e.g. permission denied).
+// Use ExistsWithError to distinguish between these cases.
 func Exists(filepath string) bool {
 	exist, _ := existsWithError(filepath)
 	return exist
+}
+
+// ExistsWithError reports whether the named file or directory exists.
+// Unlike Exists, it returns the underlying error so callers can distinguish
+// between "does not exist" and "exists but inaccessible" (e.g. permission denied).
+func ExistsWithError(filepath string) (bool, error) {
+	return existsWithError(filepath)
 }
 
 // IsDir reports whether d is a directory.
@@ -179,14 +188,15 @@ func EachLine(path string, walkFn EachLineFunc) error {
 }
 
 // IsSamePath returns true if two different strings refer to the same file.
+// Returns false if either path cannot be resolved (e.g. working directory unavailable).
 func IsSamePath(p1 string, p2 string) bool {
 	first, err := normalizedPath(p1)
 	if err != nil {
-		panic(err)
+		return false
 	}
 	second, err := normalizedPath(p2)
 	if err != nil {
-		panic(err)
+		return false
 	}
 	return first == second
 }
