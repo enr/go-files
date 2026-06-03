@@ -1,6 +1,6 @@
 module github.com/enr/go-files
 
-go 1.15
+go 1.16
 
 require (
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect

@@ -9,7 +9,7 @@ func isSymlink(p string) bool {
 	if candidate == "" {
 		return false
 	}
-	fi, err := os.Lstat(p)
+	fi, err := os.Lstat(candidate)
 	if err != nil {
 		return false
 	}

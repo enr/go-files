@@ -280,3 +280,228 @@ func TestBrokenLink(t *testing.T) {
 		t.Errorf("broken link %s expected to be link", sourceFile)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// ExistsWithError
+// ---------------------------------------------------------------------------
+
+func TestExistsWithError(t *testing.T) {
+	ok, err := ExistsWithError("testdata/files/01.txt")
+	if !ok || err != nil {
+		t.Errorf("ExistsWithError(existing): want (true, nil), got (%v, %v)", ok, err)
+	}
+
+	ok, err = ExistsWithError(".notfound")
+	if ok || err == nil {
+		t.Errorf("ExistsWithError(missing): want (false, non-nil), got (%v, %v)", ok, err)
+	}
+
+	// A path containing a null byte triggers a non-IsNotExist OS error, exercising
+	// the fallthrough branch in existsWithError.
+	ok, err = ExistsWithError("a\x00b")
+	if ok || err == nil {
+		t.Errorf("ExistsWithError(null-byte path): want (false, non-nil), got (%v, %v)", ok, err)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Sha1Sum error path
+// ---------------------------------------------------------------------------
+
+func TestSha1SumError(t *testing.T) {
+	_, err := Sha1Sum(".notfound")
+	if err == nil {
+		t.Error("Sha1Sum(.notfound): expected error, got nil")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// ReadLines error paths
+// ---------------------------------------------------------------------------
+
+func TestReadLinesError(t *testing.T) {
+	_, err := ReadLines(".notfound")
+	if err == nil {
+		t.Error("ReadLines(.notfound): expected error, got nil")
+	}
+}
+
+func TestReadLinesWhitespacePath(t *testing.T) {
+	// cleanPath strips surrounding spaces — the trimmed path must resolve correctly.
+	lines, err := ReadLines("  testdata/files/sub/03.txt  ")
+	if err != nil {
+		t.Fatalf("ReadLines with whitespace-padded path: unexpected error: %v", err)
+	}
+	if len(lines) != 5 {
+		t.Errorf("ReadLines with whitespace-padded path: want 5 lines, got %d", len(lines))
+	}
+}
+
+// ---------------------------------------------------------------------------
+// EachLine error paths
+// ---------------------------------------------------------------------------
+
+func TestEachLineError(t *testing.T) {
+	err := EachLine(".notfound", func(line string) error { return nil })
+	if err == nil {
+		t.Error("EachLine(.notfound): expected error, got nil")
+	}
+}
+
+func TestEachLineCallbackError(t *testing.T) {
+	sentinel := fmt.Errorf("stop")
+	count := 0
+	err := EachLine("testdata/files/sub/03.txt", func(line string) error {
+		count++
+		if count == 2 {
+			return sentinel
+		}
+		return nil
+	})
+	if err != sentinel {
+		t.Errorf("EachLine callback error: want sentinel error, got %v", err)
+	}
+	if count != 2 {
+		t.Errorf("EachLine callback error: want 2 lines visited, got %d", count)
+	}
+}
+
+func TestEachLineWhitespacePath(t *testing.T) {
+	count := 0
+	err := EachLine("  testdata/files/sub/03.txt  ", func(_ string) error {
+		count++
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("EachLine with whitespace-padded path: unexpected error: %v", err)
+	}
+	if count != 5 {
+		t.Errorf("EachLine with whitespace-padded path: want 5 lines, got %d", count)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// IsSamePath — false case
+// ---------------------------------------------------------------------------
+
+func TestIsSamePathFalse(t *testing.T) {
+	if IsSamePath("testdata/files/01.txt", "testdata/files/02.txt") {
+		t.Error("IsSamePath: distinct files reported as same path")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// CopyDir
+// ---------------------------------------------------------------------------
+
+func makeTempDir(t *testing.T, prefix string) string {
+	t.Helper()
+	dir, err := ioutil.TempDir("", prefix)
+	if err != nil {
+		t.Fatalf("makeTempDir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll(dir) })
+	return dir
+}
+
+func writeFile(t *testing.T, path, content string, mode os.FileMode) {
+	t.Helper()
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+	if err != nil {
+		t.Fatalf("writeFile(%s): %v", path, err)
+	}
+	if _, err = fmt.Fprint(f, content); err != nil {
+		f.Close()
+		t.Fatalf("writeFile(%s): write: %v", path, err)
+	}
+	if err = f.Close(); err != nil {
+		t.Fatalf("writeFile(%s): close: %v", path, err)
+	}
+}
+
+func TestCopyDir(t *testing.T) {
+	src := makeTempDir(t, "filestest_copydir_src")
+	dst := makeTempDir(t, "filestest_copydir_dst")
+
+	// src/
+	//   a.txt
+	//   sub/
+	//     b.txt
+	subDir := filepath.Join(src, "sub")
+	if err := os.MkdirAll(subDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(src, "a.txt"), "hello", 0644)
+	writeFile(t, filepath.Join(subDir, "b.txt"), "world", 0644)
+
+	if err := CopyDir(src, dst); err != nil {
+		t.Fatalf("CopyDir: unexpected error: %v", err)
+	}
+
+	for _, rel := range []string{"a.txt", filepath.Join("sub", "b.txt")} {
+		if !Exists(filepath.Join(dst, rel)) {
+			t.Errorf("CopyDir: expected %s to exist in dst", rel)
+		}
+	}
+}
+
+func TestCopyDirPreservesFilePermissions(t *testing.T) {
+	src := makeTempDir(t, "filestest_copydir_perms_src")
+	dst := makeTempDir(t, "filestest_copydir_perms_dst")
+
+	writeFile(t, filepath.Join(src, "exec.sh"), "#!/bin/sh\n", 0755)
+
+	if err := CopyDir(src, dst); err != nil {
+		t.Fatalf("CopyDir: %v", err)
+	}
+
+	fi, err := os.Stat(filepath.Join(dst, "exec.sh"))
+	if err != nil {
+		t.Fatalf("stat dst/exec.sh: %v", err)
+	}
+	if fi.Mode()&0111 == 0 {
+		t.Errorf("CopyDir: execute bit lost; mode = %v", fi.Mode())
+	}
+}
+
+func TestCopyDirError(t *testing.T) {
+	err := CopyDir(".notfound", "/tmp/doesnotmatter")
+	if err == nil {
+		t.Error("CopyDir(.notfound): expected error, got nil")
+	}
+}
+
+func TestCopyDirFileError(t *testing.T) {
+	// A broken symlink inside the source causes Copy to fail, exercising the
+	// error-break path inside CopyDir's file-copy branch.
+	src := makeTempDir(t, "filestest_copydir_ferr_src")
+	dst := makeTempDir(t, "filestest_copydir_ferr_dst")
+
+	if err := os.Symlink("/nonexistent/target", filepath.Join(src, "broken")); err != nil {
+		t.Skipf("cannot create symlink: %v", err)
+	}
+
+	if err := CopyDir(src, dst); err == nil {
+		t.Error("CopyDir with broken symlink: expected error, got nil")
+	}
+}
+
+func TestCopyDirNested(t *testing.T) {
+	src := makeTempDir(t, "filestest_copydir_nested_src")
+	dst := makeTempDir(t, "filestest_copydir_nested_dst")
+
+	depth := filepath.Join(src, "a", "b", "c")
+	if err := os.MkdirAll(depth, 0755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(depth, "deep.txt"), "deep", 0644)
+
+	if err := CopyDir(src, dst); err != nil {
+		t.Fatalf("CopyDir nested: %v", err)
+	}
+
+	expected := filepath.Join(dst, "a", "b", "c", "deep.txt")
+	if !Exists(expected) {
+		t.Errorf("CopyDir nested: expected %s to exist", expected)
+	}
+}
