@@ -16,6 +16,9 @@ var testcases = []samepathTestCase{
 	{".notfound", `..\files\.notfound`, true},
 	{".", "../files", true},
 	{"testdata/", "./testdata", true},
+	// negative cases
+	{"testdata/files/01.txt", "testdata/files/02.txt", false},
+	{"testdata", "testdata/files", false},
 }
 
 func TestSamePath(t *testing.T) {
